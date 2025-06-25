@@ -23,4 +23,8 @@ def process_bronze_table(table_name, source, db, snapshot_date_str, spark):
     filepath = os.path.join(bronze_table, partition_name)
     df.toPandas().to_csv(filepath, index=False)
 
+    print(f"Bronze table {table_name} created at {bronze_table} with snapshot date {snapshot_date_str}")
+    print(f'row count: {df.count()}')
+    df.show(5)
+
     return df

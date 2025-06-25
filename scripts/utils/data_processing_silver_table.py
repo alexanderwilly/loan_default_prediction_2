@@ -275,4 +275,9 @@ def process_silver_table(table_name, bronze_db, silver_db, snapshot_date_str, sp
     partition_name = snapshot_date_str.replace('-','_') + '.parquet'
     filepath = os.path.join(silver_db, table_name, partition_name)
     df.write.mode("overwrite").parquet(filepath)
+
+    print(f"Silver table {table_name} created at {silver_db} with snapshot date {snapshot_date_str}")
+    print(f'row count: {df.count()}')
+    df.show(5)
+
     return df
