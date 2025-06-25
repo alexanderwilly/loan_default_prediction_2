@@ -80,7 +80,7 @@ def main():
         os.makedirs(bronze_directory)
         
         
-    for date_str in tqdm(dates_str_lst, total=len(dates_str_lst), desc="Processing financials"):
+    for date_str in dates_str_lst:
         utils.data_processing_bronze_table.process_bronze_table('financials', 'data/features_financials.csv', bronze_directory, date_str, spark)
    
 

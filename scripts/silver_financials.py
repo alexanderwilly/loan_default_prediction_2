@@ -52,7 +52,7 @@ def generate_first_of_month_dates(start_date_str, end_date_str):
 
 
 def main():
-    print('\n\n---Start Silver Label Store---\n\n')
+    print('\n\n--- starting job ~ silver_financials ---\n\n')
 
     # ~~~~ Setup Spark Session ~~~~
     spark = SparkSession \
@@ -73,20 +73,22 @@ def main():
     print("Done generate list of dates!")
     print(dates_str_lst)
 
-    # ~~~~ Create Silver Datalake ~~~~
+    # ~~~~ Create Bronze Datalake ~~~~
     bronze_directory = "datamart/bronze"
     silver_directory = "datamart/silver"
 
     if not os.path.exists(silver_directory):
         os.makedirs(silver_directory)
-
-    for date_str in dates_str_lst:
-        utils.data_processing_silver_table.process_silver_table('lms', bronze_directory, silver_directory, date_str, spark)
-
     
+    for date_str in dates_str_lst:
+        utils.data_processing_silver_table.process_silver_table('financials', bronze_directory, silver_directory, date_str, spark)
+
+
+
     # end spark session
     spark.stop()
-    print('\n\n---End Silver Label Store---\n\n')
+    print('\n\n--- finished job ~ silver_financials ---\n\n')
+
 
 
 

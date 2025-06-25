@@ -80,9 +80,27 @@ with DAG(
         )
     )
 
-    silver_clickstream = DummyOperator(task_id="silver_clickstream")
-    silver_attributes = DummyOperator(task_id="silver_attributes")
-    silver_financials = DummyOperator(task_id="silver_financials")
+    silver_clickstream = BashOperator(
+        task_id="silver_clickstream",
+        bash_command=(
+            'cd /opt/airflow/scripts &&'
+            'python3 silver_clickstream.py'
+        )
+    )
+    silver_attributes = BashOperator(
+        task_id="silver_attributes",
+        bash_command=(
+            'cd /opt/airflow/scripts &&'
+            'python3 silver_attributes.py'
+            )
+    )
+    silver_financials = BashOperator(
+        task_id="silver_financials",
+        bash_command=(
+            'cd /opt/airflow/scripts &&'
+            'python3 silver_financials.py'   
+        )
+    )
 
 
     # Define task dependencies to run scripts sequentially
