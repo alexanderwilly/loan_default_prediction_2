@@ -50,11 +50,35 @@ with DAG(
     dep_check_source_label_data >> bronze_label_store >> silver_label_store
  
     # --- feature store ---
-    dep_check_source_feature_data = DummyOperator(task_id="dep_check_source_feature_data")
+    dep_check_source_feature_data = BashOperator(
+        task_id="dep_check_source_feature_data",
+        bash_command=(
+            'cd /opt/airflow/scripts &&'
+            'python3 dep_check_source_feature_data.py'
+        )
+    )
     
-    bronze_clickstream = DummyOperator(task_id="bronze_clickstream")
-    bronze_attributes = DummyOperator(task_id="bronze_attributes")
-    bronze_financials = DummyOperator(task_id="bronze_financials")
+    bronze_clickstream = BashOperator(
+        task_id="bronze_clickstream",
+        bash_command=(
+            'cd /opt/airflow/scripts &&'
+            'python3 bronze_clickstream.py'
+        )    
+    )
+    bronze_attributes = BashOperator(
+        task_id="bronze_attributes",
+        bash_command=(
+            'cd /opt/airflow/scripts &&'
+            'python3 bronze_attributes.py'
+        )
+    )
+    bronze_financials = BashOperator(
+        task_id="bronze_financials",
+        bash_command=(
+            'cd /opt/airflow/scripts &&'
+            'python3 bronze_financials.py'
+        )
+    )
 
     silver_clickstream = DummyOperator(task_id="silver_clickstream")
     silver_attributes = DummyOperator(task_id="silver_attributes")
