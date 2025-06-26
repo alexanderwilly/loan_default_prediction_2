@@ -167,4 +167,10 @@ def process_gold_table(silver_db, gold_db, partitions_list, spark):
         label_filepath = os.path.join(gold_db, 'label_store', partition_name)
         df_label.filter(col('snapshot_date')==date_str).write.mode('overwrite').parquet(label_filepath)
 
+    print("X: ")
+    df_features.show(5)
+
+    print("y: ")
+    df_label.show(5)
+
     return df_features, df_label

@@ -110,8 +110,20 @@ with DAG(
 
 
     # gold tables
-    gold_feature_label_store = DummyOperator(task_id="gold_feature_label_store")
-    feature_label_store_completed = DummyOperator(task_id="feature_label_store_completed")
+    gold_feature_label_store = BashOperator(
+        task_id="gold_feature_label_store",
+        bash_command=(
+            'cd /opt/airflow/scripts &&'
+            'python3 gold_feature_label_store.py'   
+        )    
+    )
+    feature_label_store_completed = BashOperator(
+        task_id="feature_label_store_completed", 
+        bash_command=(
+            'cd /opt/airflow/scripts &&'
+            'python3 feature_label_store_completed.py'
+        )
+    )
 
     # Define task dependencies to run scripts sequentially
     silver_label_store >> gold_feature_label_store
@@ -122,14 +134,9 @@ with DAG(
     gold_feature_label_store >> feature_label_store_completed
 
 
-    # --- model inference ---
-    # model_inference_start = DummyOperator(task_id="model_inference_start")
+    # --- model train and inference ---
+    model_training = DummyOperator(task_id="model_training")
 
-    # model_1_inference = DummyOperator(task_id="model_1_inference")
-
-    # model_2_inference = DummyOperator(task_id="model_2_inference")
-
-    # model_inference_completed = DummyOperator(task_id="model_inference_completed")
     
     # Define task dependencies to run scripts sequentially
     # feature_store_completed >> model_inference_start
