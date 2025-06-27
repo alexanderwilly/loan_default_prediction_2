@@ -16,7 +16,8 @@ with DAG(
     description='data pipeline run once a month',
     schedule_interval='0 0 1 * *',  # At 00:00 on day-of-month 1
     start_date=datetime(2023, 1, 1),
-    end_date=datetime(2024, 12, 1),
+    # end_date=datetime(2024, 12, 1),
+    end_date=datetime(2023, 1, 3),
     catchup=True,
 ) as dag:
 
@@ -134,8 +135,18 @@ with DAG(
     gold_feature_label_store >> feature_label_store_completed
 
 
-    # --- model train and inference ---
-    model_training = DummyOperator(task_id="model_training")
+    # --- model train, inference, and monitor ---
+    model_training = BashOperator(
+        task_id="model_training",
+        bash_command=(
+            'cd /opt/airflow/scripts &&'
+            'python3 model_training.py'
+        )
+    )
+    model_inference = DummyOperator(task_id="model_inference")
+    model_monitoring = DummyOperator(task_id="model_monitoring")
+
+    feature_label_store_completed >> model_training >> model_inference >> model_monitoring
 
     
     # Define task dependencies to run scripts sequentially
