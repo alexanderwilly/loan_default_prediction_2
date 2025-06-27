@@ -16,8 +16,7 @@ with DAG(
     description='data pipeline run once a month',
     schedule_interval='0 0 1 * *',  # At 00:00 on day-of-month 1
     start_date=datetime(2023, 1, 1),
-    # end_date=datetime(2024, 12, 1),
-    end_date=datetime(2023, 1, 3),
+    end_date=datetime(2024, 12, 1),
     catchup=True,
 ) as dag:
 
@@ -150,44 +149,13 @@ with DAG(
             'python3 model_inference.py'
         )       
     )
-    model_monitoring = DummyOperator(task_id="model_monitoring")
+    model_monitoring = BashOperator(
+        task_id="model_monitoring",
+        bash_command=(
+            'cd /opt/airflow/scripts &&'
+            'python3 model_monitoring.py'
+        )
+    
+    )
 
     feature_label_store_completed >> model_training >> model_inference >> model_monitoring
-
-    
-    # Define task dependencies to run scripts sequentially
-    # feature_store_completed >> model_inference_start
-    # model_inference_start >> model_1_inference >> model_inference_completed
-    # model_inference_start >> model_2_inference >> model_inference_completed
-
-
-    # --- model monitoring ---
-    # model_monitor_start = DummyOperator(task_id="model_monitor_start")
-
-    # model_1_monitor = DummyOperator(task_id="model_1_monitor")
-
-    # model_2_monitor = DummyOperator(task_id="model_2_monitor")
-
-    # model_monitor_completed = DummyOperator(task_id="model_monitor_completed")
-    
-    # Define task dependencies to run scripts sequentially
-    # model_inference_completed >> model_monitor_start
-    # model_monitor_start >> model_1_monitor >> model_monitor_completed
-    # model_monitor_start >> model_2_monitor >> model_monitor_completed
-
-
-    # --- model auto training ---
-
-    # model_automl_start = DummyOperator(task_id="model_automl_start")
-    
-    # model_1_automl = DummyOperator(task_id="model_1_automl")
-
-    # model_2_automl = DummyOperator(task_id="model_2_automl")
-
-    # model_automl_completed = DummyOperator(task_id="model_automl_completed")
-    
-    # Define task dependencies to run scripts sequentially
-    # feature_store_completed >> model_automl_start
-    # label_store_completed >> model_automl_start
-    # model_automl_start >> model_1_automl >> model_automl_completed
-    # model_automl_start >> model_2_automl >> model_automl_completed

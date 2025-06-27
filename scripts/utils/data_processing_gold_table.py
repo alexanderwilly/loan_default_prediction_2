@@ -4,8 +4,6 @@ import glob
 import pyspark
 import pyspark.sql.functions as F
 
-from tqdm import tqdm
-
 from pyspark.sql.functions import col
 from pyspark.sql.types import StringType, IntegerType, FloatType, DateType, MapType, NumericType, ArrayType
 from pyspark.ml.feature import StringIndexer, OneHotEncoder, Imputer, VectorAssembler, StandardScaler
@@ -156,13 +154,13 @@ def process_gold_table(silver_db, gold_db, partitions_list, spark):
     df_features = build_feature_store(df_attributes, df_financials, df_loan_type, df_clickstream, df_lms, df_label)
 
     # Partition and save features
-    for date_str in tqdm(partitions_list, total=len(partitions_list), desc="Saving features"):
+    for date_str in partitions_list:
         partition_name = date_str.replace('-','_') + '.parquet'
         feature_filepath = os.path.join(gold_db, 'feature_store', partition_name)
         df_features.filter(col('snapshot_date')==date_str).write.mode('overwrite').parquet(feature_filepath)
 
     # Partition and save labels
-    for date_str in tqdm(partitions_list, total=len(partitions_list), desc="Saving labels"):
+    for date_str in partitions_list:
         partition_name = date_str.replace('-','_') + '.parquet'
         label_filepath = os.path.join(gold_db, 'label_store', partition_name)
         df_label.filter(col('snapshot_date')==date_str).write.mode('overwrite').parquet(label_filepath)

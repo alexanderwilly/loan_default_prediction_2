@@ -98,7 +98,6 @@ def main():
     y_inference_pdf["model_name"] = config["model_name"]
     y_inference_pdf["prediction"] = y_inference
 
-    print(y_inference_pdf.head(10))
 
 
     # ==== Save Predictions ====
