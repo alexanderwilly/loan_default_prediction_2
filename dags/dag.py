@@ -143,7 +143,13 @@ with DAG(
             'python3 model_training.py'
         )
     )
-    model_inference = DummyOperator(task_id="model_inference")
+    model_inference = BashOperator(
+        task_id="model_inference",
+        bash_command=(
+            'cd /opt/airflow/scripts &&'
+            'python3 model_inference.py'
+        )       
+    )
     model_monitoring = DummyOperator(task_id="model_monitoring")
 
     feature_label_store_completed >> model_training >> model_inference >> model_monitoring

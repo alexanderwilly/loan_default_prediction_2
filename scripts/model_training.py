@@ -5,6 +5,7 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import random
+import seaborn as sns
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import pprint
@@ -14,12 +15,14 @@ import pyspark.sql.functions as F
 from pyspark.sql.functions import col
 from pyspark.sql.types import StringType, IntegerType, FloatType, DateType
 
+
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 import xgboost as xgb
 from sklearn.model_selection import RandomizedSearchCV
-from sklearn.metrics import make_scorer, f1_score, roc_auc_score
+from sklearn.metrics import make_scorer, f1_score, roc_auc_score, accuracy_score, precision_score, recall_score, precision_recall_curve, classification_report
+
 from sklearn.datasets import make_classification
 from sklearn.model_selection import train_test_split
 from pyspark.sql.functions import col, to_date, count, min, max, lit
@@ -124,9 +127,11 @@ def main():
 
     scaler = StandardScaler()
 
-    X_train_arr = scaler.fit_transform(X_train_arr)
-    X_test_arr = scaler.transform(X_test_arr)
-    X_oot_arr = scaler.transform(X_oot_arr)
+    transformer_stdscaler = scaler.fit(X_train_arr)
+
+    X_train_arr = transformer_stdscaler.transform(X_train_arr)
+    X_test_arr = transformer_stdscaler.transform(X_test_arr)
+    X_oot_arr = transformer_stdscaler.transform(X_oot_arr)
 
 
 
@@ -168,6 +173,7 @@ def main():
     best_model = random_search.best_estimator_
 
     # Predict and evaluate
+    # AUC
     y_pred_proba_train = best_model.predict_proba(X_train_arr)[:, 1]
     train_auc = roc_auc_score(y_train_arr, y_pred_proba_train)
 
@@ -180,6 +186,47 @@ def main():
     print(f"Train AUC: {train_auc:.4f}")
     print(f"Test AUC: {test_auc:.4f}")
     print(f"OOT AUC: {oot_auc:.4f}")
+    
+    
+    
+    y_pred_train = best_model.predict(X_train_arr)
+    y_pred_test = best_model.predict(X_test_arr)
+    y_pred_oot = best_model.predict(X_oot_arr)
+    
+    # Accuracy
+    train_accuracy = accuracy_score(y_train_arr, y_pred_train)
+    test_accuracy = accuracy_score(y_test_arr, y_pred_test)
+    oot_accuracy = accuracy_score(y_oot_arr, y_pred_oot)
+
+    print(f"Train Accuracy: {train_accuracy:.4f}")
+    print(f"Test Accuracy: {test_accuracy:.4f}")
+    print(f"OOT Accuracy: {oot_accuracy:.4f}")
+
+    # Precision
+    train_precision = precision_score(y_train_arr, y_pred_train)
+    test_precision = precision_score(y_test_arr, y_pred_test)
+    oot_precision = precision_score(y_oot_arr, y_pred_oot)
+
+    print(f"Train Precision: {train_precision:.4f}")
+    print(f"Test Precision: {test_precision:.4f}")
+    print(f"OOT Precision: {oot_precision:.4f}")
+
+    # Recall
+    train_recall = recall_score(y_train_arr, y_pred_train)
+    test_recall = recall_score(y_test_arr, y_pred_test)
+    oot_recall = recall_score(y_oot_arr, y_pred_oot)
+    print(f"Train Recall: {train_recall:.4f}")
+    print(f"Test Recall: {test_recall:.4f}")
+    print(f"OOT Recall: {oot_recall:.4f}")
+    
+    # F1 Score
+    train_f1 = f1_score(y_train_arr, y_pred_train)
+    test_f1 = f1_score(y_test_arr, y_pred_test)
+    oot_f1 = f1_score(y_oot_arr, y_pred_oot)
+
+    print(f"Train F1 Score: {train_f1:.4f}")
+    print(f"Test F1 Score: {test_f1:.4f}")
+    print(f"OOT F1 Score: {oot_f1:.4f}")
 
 
     # ========== Save model artefacts ==========
@@ -187,6 +234,9 @@ def main():
 
     model_artefact['model'] = best_model
     model_artefact['model_version'] = "credit_model_"+config["model_train_date_str"].replace('-','_')
+
+    model_artefact['preprocessing_transformers'] = {}
+    model_artefact['preprocessing_transformers']['stdscaler'] = transformer_stdscaler
     
     model_artefact['data_dates'] = config
     model_artefact['data_stats'] = {}
@@ -202,6 +252,18 @@ def main():
     model_artefact['results']['train_auc'] = train_auc
     model_artefact['results']['test_auc'] = test_auc
     model_artefact['results']['oot_auc'] = oot_auc
+    model_artefact['results']['train_f1'] = train_f1
+    model_artefact['results']['test_f1'] = test_f1
+    model_artefact['results']['oot_f1'] = oot_f1
+    model_artefact['results']['train_accuracy'] = train_accuracy
+    model_artefact['results']['test_accuracy'] = test_accuracy
+    model_artefact['results']['oot_accuracy'] = oot_accuracy
+    model_artefact['results']['train_precision'] = train_precision
+    model_artefact['results']['test_precision'] = test_precision
+    model_artefact['results']['oot_precision'] = oot_precision
+    model_artefact['results']['train_recall'] = train_recall
+    model_artefact['results']['test_recall'] = test_recall
+    model_artefact['results']['oot_recall'] = oot_recall
 
     model_artefact['hp_params'] = random_search.best_params_
 
